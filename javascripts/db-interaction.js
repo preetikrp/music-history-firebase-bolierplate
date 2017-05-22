@@ -10,15 +10,41 @@ let $ = require('jquery'),
 // ****************************************
 
 function getSongs(callback) {
+    return new Promise(function(resolve, reject) {
+        $.ajax({
+            url: `${firebase.getFBsettings().databaseURL}/songs.json`
+        }).done(function(songData) {
+            resolve(songData);
+        });
+    });
 
 }
 
 function addSong(songFormObj) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+                type: 'POST',
+                url: `${firebase.getFBsettings().databaseURL}/songs.json`,
+                data: JSON.stringify(songFormObj),
+                dataType: 'JSON'
+            })
+            .done((data) => {
+                resolve(data);
 
+            });
+    });
 }
 // POST - Submits data to be processed to a specified resource. Takes one parameter.
 
 function deleteSong(songId) {
+    return new Promise(function(resolve, reject) {
+        $.ajax({
+            url: `${firebase.getFBsettings().databaseURL}/songs/${songId}.json`,
+            method: "DELETE"
+        }).done(function() {
+            resolve();
+        });
+    });
 
 }
 
@@ -33,9 +59,9 @@ function editSong(songFormObj, songId) {
 }
 
 module.exports = {
-  getSongs,
-  addSong,
-  getSong,
-  deleteSong,
-  editSong
+    getSongs,
+    addSong,
+    getSong,
+    deleteSong,
+    editSong
 };
