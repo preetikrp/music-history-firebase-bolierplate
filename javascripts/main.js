@@ -2,13 +2,15 @@
 
 let $ = require('jquery'),
     db = require("./db-interaction"),
-    templates = require("./dom-builder");
-// login = require("./user");
+    templates = require("./dom-builder"),
+ login = require("./user");
 
 
 // Using the REST API
 function loadSongsToDOM() {
     console.log("Need to load some songs, Buddy");
+    let currentUser = login.getUser();
+    db.getSongs(currentUser);
     db.getSongs()
         .then(function(songData) {
             console.log("got data", songData);
@@ -33,6 +35,16 @@ loadSongsToDOM(); //<--Move to auth section after adding login btn
 
 
 // Send newSong data to db then reload DOM with updated song data
+
+
+      
+
+// go get the song from database and then populate the form for editing.
+
+
+
+//Save edited song to FB then reload DOM with updated song data
+
 $(document).on("click", ".save_new_btn", function() {
     console.log("click save new song");
     let songObj = buildSongObj();
@@ -44,11 +56,25 @@ $(document).on("click", ".save_new_btn", function() {
 
 // go get the song from database and then populate the form for editing.
 $(document).on("click", ".edit-btn", function() {
-
+    console.log("click edit song");
+    let songID = $(this).data("edit-id");
+    db.getSong(songID)
+        .then(function(song) {
+            return templates.songForm(song, songID);
+        }).then(function(finishedForm) {
+            $(".uiContainer--wrapper").html(finishedForm);
+        });
 });
-
-//Save edited song to FB then reload DOM with updated song data
 $(document).on("click", ".save_edit_btn", function() {
+    let songObj = buildSongObj(),
+        songID = $(this).attr("id");
+    console.log("songID", songID);
+    db.editSong(songObj, songID)
+        .then(function(data) {
+            loadSongsToDOM();
+
+        });
+
 
 });
 
@@ -71,7 +97,8 @@ function buildSongObj() {
         title: $("#form--title").val(),
         artist: $("#form--artist").val(),
         album: $("#form--album").val(),
-        year: $("#form--year").val()
+        year: $("#form--year").val(),
+        uid: login.guestuser()
     };
     return songObj;
 }
@@ -83,4 +110,18 @@ $("#add-song").click(function() {
         .then(function(songForm) {
             $(".uiContainer--wrapper").html(songForm);
         });
+});
+$("#auth-btn").click(function(){
+  console.log("clicked on auth-btn");
+  login.logInGoogle()
+  .then(function(result){
+    console.log("result from Login", result.user.uid);
+    login.setUser(result.user.uid);
+    loadSongsToDOM();
+
+  });
+});
+$("#logout").click(function(){
+    console.log("logout clicked");
+    login.logOut();
 });

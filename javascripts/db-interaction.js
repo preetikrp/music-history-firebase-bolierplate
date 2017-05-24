@@ -15,6 +15,8 @@ function getSongs(callback) {
             url: `${firebase.getFBsettings().databaseURL}/songs.json`
         }).done(function(songData) {
             resolve(songData);
+        }).fail(function(error){
+            reject(error);
         });
     });
 
@@ -48,13 +50,34 @@ function deleteSong(songId) {
 
 }
 
-function getSong(songId) {
+function getSong(user) {
+    return new Promise(function(resolve, reject){
+        $.ajax({
+            url: `${firebase.getFBsettings().databaseURL}/songs.json?orderBy="uid"&equalTo="${user}"`
+
+        }).done(function(songData){
+		resolve (songData);
+        }).fail(function(error){
+            reject(error);
+        });
+    });
 
 }
 
 // GET - Requests/read data from a specified resource
 // PUT - Update data to a specified resource. Takes two parameters.
+//PATCH update only the changes
 function editSong(songFormObj, songId) {
+    return new Promise(function(resolve, reject){
+        $.ajax({
+            url: `${firebase.getFBsettings().databaseURL}/songs/${songId}.json`,
+            type: 'PATCH',
+            data: JSON.stringify(songFormObj)
+
+            }).done(function(data){
+                resolve(data);
+        });
+    });
 
 }
 
